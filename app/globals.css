@@ -3,25 +3,143 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #070614;
+  --foreground: #F8FAFC;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+  selection-background-color: #A855F7;
+  selection-color: #ffffff;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+::selection {
+  background: rgba(168, 85, 247, 0.4);
+  color: #ffffff;
+}
+
+/* Custom Webkit Scrollbar */
+::-webkit-scrollbar {
+  width: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: #070614;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E1B4B;
+  border-radius: 9999px;
+  border: 2px solid #070614;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4C1D95;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: rgba(16, 14, 46, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-hover:hover {
+  background: rgba(22, 19, 60, 0.85);
+  border-color: rgba(168, 85, 247, 0.35);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 36px -10px rgba(168, 85, 247, 0.25);
+}
+
+.glass-nav {
+  background: rgba(7, 6, 20, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Gradient Text Shimmer */
+.text-gradient-purple-pink {
+  background: linear-gradient(135deg, #A855F7 0%, #EC4899 50%, #3B82F6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-cyan-blue {
+  background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 50%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 50%, #D97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Achievement Card Special Borders */
+.gold-card-glow {
+  position: relative;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 30px -8px rgba(245, 158, 11, 0.25), 0 12px 40px -10px rgba(0, 0, 0, 0.6);
+}
+
+.gold-card-glow:hover {
+  border-color: rgba(245, 158, 11, 0.65);
+  box-shadow: 0 0 45px -5px rgba(245, 158, 11, 0.4), 0 20px 50px -10px rgba(0, 0, 0, 0.7);
+}
+
+.podcast-card-glow {
+  position: relative;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  box-shadow: 0 0 30px -8px rgba(168, 85, 247, 0.25), 0 12px 40px -10px rgba(0, 0, 0, 0.6);
+}
+
+.podcast-card-glow:hover {
+  border-color: rgba(168, 85, 247, 0.65);
+  box-shadow: 0 0 45px -5px rgba(168, 85, 247, 0.4), 0 20px 50px -10px rgba(0, 0, 0, 0.7);
+}
+
+/* Background Animated Gradient Mesh */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Shimmer Highlight Effect */
+.shimmer-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-button::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  animation: shimmer 4s infinite linear;
 }
