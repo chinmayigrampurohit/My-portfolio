@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { PERSONAL_INFO } from "@/data/portfolioData";
+import { database } from "@/lib/firebase";
+import { ref, push, serverTimestamp } from "firebase/database";
 import {
   Mail,
   Send,
@@ -12,6 +14,7 @@ import {
   ExternalLink,
   MessageSquare,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "@/components/SocialIcons";
 
@@ -22,6 +25,7 @@ export default function Contact() {
     message: "",
   });
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -31,14 +35,37 @@ export default function Contact() {
     setTimeout(() => setCopiedEmail(false), 2500);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
       setErrorMessage("Please fill in all fields before sending.");
       return;
     }
     setErrorMessage("");
-    setSubmitted(true);
+    setIsSubmitting(true);
+
+    try {
+      // Save message to Firebase Realtime Database under 'contacts'
+      const contactsRef = ref(database, "contacts");
+      await push(contactsRef, {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        message: formData.message.trim(),
+        createdAt: serverTimestamp(),
+        userAgent: typeof window !== "undefined" ? window.navigator.userAgent : "unknown",
+      });
+
+      setSubmitted(true);
+    } catch (error: unknown) {
+      console.error("Firebase submission error:", error);
+      const errText = error instanceof Error ? error.message : "Unknown error";
+      // Fallback message if Firebase database rules block write or network fails
+      setErrorMessage(
+        `Could not submit: ${errText}. Please try sending via direct email below.`
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const mailtoUrl = `mailto:${PERSONAL_INFO.contact.email}?subject=${encodeURIComponent(
@@ -180,30 +207,31 @@ export default function Contact() {
                     <Check className="w-8 h-8" />
                   </div>
                   <h4 className="text-xl font-bold text-white">
-                    Thank you, {formData.name}!
+                    Message Sent, {formData.name}!
                   </h4>
                   <p className="text-sm text-gray-300 max-w-md mx-auto">
-                    Your message draft has been generated. Since this is a client-side portfolio, you can launch your default mail app immediately with all your details pre-populated:
+                    Your message has been successfully saved to the database. I will review it and get back to you shortly!
                   </p>
                   
                   <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <a
-                      href={mailtoUrl}
-                      className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-lg shadow-purple-600/30 flex items-center justify-center gap-2"
-                    >
-                      <Mail className="w-4 h-4" />
-                      <span>Open Pre-filled Email</span>
-                    </a>
-
                     <button
                       onClick={() => {
                         setSubmitted(false);
                         setFormData({ name: "", email: "", message: "" });
                       }}
-                      className="w-full sm:w-auto px-5 py-3 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs text-gray-300 hover:text-white"
+                      className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-lg shadow-purple-600/30 flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      Send Another Message
+                      <Sparkles className="w-4 h-4" />
+                      <span>Send Another Message</span>
                     </button>
+
+                    <a
+                      href={mailtoUrl}
+                      className="w-full sm:w-auto px-5 py-3 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs text-gray-300 hover:text-white flex items-center justify-center gap-2"
+                    >
+                      <Mail className="w-3.5 h-3.5" />
+                      <span>Or Open in Email App</span>
+                    </a>
                   </div>
                 </div>
               ) : (
@@ -227,10 +255,11 @@ export default function Contact() {
                         type="text"
                         id="name"
                         required
+                        disabled={isSubmitting}
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder="e.g. Alex Morgan"
-                        className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm text-white placeholder-gray-500 transition-colors"
+                        className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm text-white placeholder-gray-500 transition-colors disabled:opacity-50"
                       />
                     </div>
 
@@ -245,10 +274,11 @@ export default function Contact() {
                         type="email"
                         id="email"
                         required
+                        disabled={isSubmitting}
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         placeholder="alex@example.com"
-                        className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm text-white placeholder-gray-500 transition-colors"
+                        className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm text-white placeholder-gray-500 transition-colors disabled:opacity-50"
                       />
                     </div>
                   </div>
@@ -264,23 +294,34 @@ export default function Contact() {
                       id="message"
                       rows={5}
                       required
+                      disabled={isSubmitting}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       placeholder="Hi Chinmayi, I saw your work on the Multimodal Attendance Agent and would love to collaborate..."
-                      className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm text-white placeholder-gray-500 transition-colors resize-none"
+                      className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm text-white placeholder-gray-500 transition-colors resize-none disabled:opacity-50"
                     />
                   </div>
 
                   <div className="pt-2">
                     <button
                       type="submit"
-                      className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-sm shadow-lg shadow-purple-600/30 hover:shadow-purple-600/50 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      disabled={isSubmitting}
+                      className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-sm shadow-lg shadow-purple-600/30 hover:shadow-purple-600/50 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed"
                     >
-                      <span>Send Message</span>
-                      <Send className="w-4 h-4" />
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Sending Message...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Send Message</span>
+                          <Send className="w-4 h-4" />
+                        </>
+                      )}
                     </button>
                     <p className="text-[11px] text-center text-gray-400 mt-3">
-                      Emails open securely via your default mail client or directly to{" "}
+                      Submissions are stored securely via Firebase. You can also reach out directly to{" "}
                       <a
                         href={`mailto:${PERSONAL_INFO.contact.email}`}
                         className="text-purple-400 hover:underline"
